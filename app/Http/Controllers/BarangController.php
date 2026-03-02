@@ -22,18 +22,19 @@ class BarangController extends Controller
      * Show the form for creating a new resource.
      */
 
-    private function kode_barang() {
+    private function kode_barang()
+    {
         $dataTerakhir = Barang::latest()->first();
-        if(!$dataTerakhir) {
+        if (!$dataTerakhir) {
             return 'BRG0001';
         }
         $kodeTerakhir = $dataTerakhir->kode_barang;
         $number = (int) substr($kodeTerakhir, 3) + 1;
-        return 'BGR' . str_pad($number, 4, '0', STR_PAD_LEFT);
+        return 'BRG' . str_pad($number, 4, '0', STR_PAD_LEFT);
     }
 
     public function create()
-    {   
+    {
         $data['kategori'] = Kategori::get();
         $data['kode_barang'] = $this->kode_barang();
         return view('barang.create', $data);

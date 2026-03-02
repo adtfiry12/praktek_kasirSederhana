@@ -20,18 +20,19 @@ class PelangganController extends Controller
      * Show the form for creating a new resource.
      */
 
-    private function kode_pelanggan() {
+    private function kode_pelanggan()
+    {
         $dataTerakhir = Pelanggan::latest()->first();
-        if(!$dataTerakhir) {
+        if (!$dataTerakhir) {
             return 'PLG0001';
         }
-        $kodeTerakhir = $dataTerakhir->kode_barang;
+        $kodeTerakhir = $dataTerakhir->kode_pelanggan;
         $number = (int) substr($kodeTerakhir, 3) + 1;
         return 'PLG' . str_pad($number, 4, '0', STR_PAD_LEFT);
     }
 
     public function create()
-    {   
+    {
         $data = $this->kode_pelanggan();
         return view('pelanggan.create', compact('data'));
     }
@@ -41,13 +42,13 @@ class PelangganController extends Controller
      */
     public function store(Request $request)
     {
-    Pelanggan::create([
-        'kode_pelanggan' => $request->kode_pelanggan,
-        'nama' => $request->nama,
-        'alamat' => $request->alamat,
-        'no_telp' => $request->no_telp
-    ]);
-    return redirect('pelanggan')->with('success', 'data berhasil di tambahkan');
+        Pelanggan::create([
+            'kode_pelanggan' => $request->kode_pelanggan,
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'no_telp' => $request->no_telp
+        ]);
+        return redirect('pelanggan')->with('success', 'data berhasil di tambahkan');
     }
 
     /**

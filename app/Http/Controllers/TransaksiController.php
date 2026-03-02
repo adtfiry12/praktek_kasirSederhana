@@ -28,7 +28,7 @@ class TransaksiController extends Controller
         $tgl = date('Y-m-d');
         $number = Transaksi::where("created_at", "like", "%" . $tgl . "%")->count();
         $angka = $number + 1;
-        $codes = str_pad($angka, 3, rand(11,99), STR_PAD_LEFT);
+        $codes = str_pad($angka, 3, rand(11, 99), STR_PAD_LEFT);
         $code = "TRS-" . date('ymd') . $codes;
 
         return $code;
@@ -36,7 +36,7 @@ class TransaksiController extends Controller
 
 
     public function create()
-    {   
+    {
         $data['pengguna'] = Pengguna::get();
         $data['kode_transaksi'] = self::kode_transaksi();
         return view('transaksi.create', $data);
@@ -47,7 +47,29 @@ class TransaksiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $act = Transaksi::create([
+            'kode_transaksi' => self::kode_transaksi(),
+            'id_pelanggan'   => $request->id_pelanggan,
+            'id_pengguna'    => $request->id_pengguna,
+            'total'          => $request->total,
+            'bayar'          => $request->bayar,
+            'kembali'        => $request->kembali
+        ]);
+
+        if ($act) {
+            $id_barang = $request->dt_id_barang;
+            $jumlah_beli = $request->dt_jumlah_beli;
+            $sub_total = $request->dt_sub_total;
+        }
+        foreach ($id_barang as $i => $key) {
+            $baru = new Transaksi;
+            $baru->kode_transaksi = $request->kode_transaksi;
+            $baru->id_barang = $key;
+            $baru->jumlah_beli = $jumlah_beli($i);
+            $baru->sub_total = $sub_total($i);
+            $baru->save();
+        }
+        return redirect('transaksi');
     }
 
     /**
@@ -82,44 +104,45 @@ class TransaksiController extends Controller
         //
     }
 
-    public function cari(Request $request){
-    $id = $request->id;
+    public function cari(Request $request)
+    {
+        $id = $request->id;
 
-    if(!$id){
-        return response()->json(['val'=>2]);
+        if (!$id) {
+            return response()->json(['val' => 2]);
+        }
+
+        $isi = Pelanggan::where('kode_pelanggan', $id)->first();
+
+        if (!$isi) {
+            return response()->json(['val' => 0]);
+        }
+
+        return response()->json([
+            'val' => 1,
+            'data' => $isi
+        ]);
     }
 
-    $isi = Pelanggan::where('kode_pelanggan',$id)->first();
+    public function caribarang(Request $request)
+    {
+        $id = $request->id;
 
-    if(!$isi){
-        return response()->json(['val'=>0]);
+        if (!$id) {
+            return response()->json(['val' => 2]);
+        }
+
+        $isi = Barang::with('kategori')
+            ->where('kode_barang', $id)
+            ->first();
+
+        if (!$isi) {
+            return response()->json(['val' => 0]);
+        }
+
+        return response()->json([
+            'val' => 1,
+            'data' => $isi
+        ]);
     }
-
-    return response()->json([
-        'val'=>1,
-        'data'=>$isi
-    ]);
-}
-
-public function caribarang(Request $request){
-    $id = $request->id;
-
-    if(!$id){
-        return response()->json(['val'=>2]);
-    }
-
-    $isi = Barang::with('kategori')
-        ->where('kode_barang', $id)
-        ->first();
-
-    if(!$isi){
-        return response()->json(['val'=>0]);
-    }
-
-    return response()->json([
-        'val'=>1,
-        'data'=>$isi
-    ]);
-}
-
 }
