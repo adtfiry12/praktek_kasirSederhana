@@ -9,7 +9,7 @@
                 <h4 class="m-b-0 text-white">Tambah Data</h4>
             </div>
             <div class="card-body">
-                <form action="" method="POST">
+                <form action="{{ url('transaksi/store') }}" method="POST">
                     @csrf
                     <div class="form-body">
                         <h3 class="card-title m-t-15">Tambah Data Transaksi</h3>
@@ -163,6 +163,20 @@
                             <i class="fa fa-check"></i> Save
                         </button>
                         <button type="reset" class="btn btn-inverse">Cancel</button>
+                        @if (session('struk_url'))
+                            <script>
+                                window.onload = function() {
+                                    let strukWindow = window.open("{{ session('struk_url') }}", "_blank");
+                                    if (strukWindow) {
+                                        strukWindow.onload = function() {
+                                            strukWindow.print();
+                                        };
+                                    } else {
+                                        alert("Popup diblokir! Harap izinkan popup mencetak struk");
+                                    }
+                                };
+                            </script>
+                        @endif
                     </div>
                 </form>
             </div>

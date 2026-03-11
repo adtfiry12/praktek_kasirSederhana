@@ -11,13 +11,20 @@ class Transaksi extends Model
     protected $connection = 'mysql';
     protected $table = 'transaksi';
     protected $primaryKey = 'id_transaksi';
-    protected $fillable = ['id_transaksi','kode_transaksi','id_pelanggan', 'total', 'bayar', 'kembali', 'id_pengguna'];
+    protected $fillable = ['id_transaksi', 'kode_transaksi', 'id_pelanggan', 'total', 'bayar', 'kembali', 'id_pengguna'];
 
-    public function Pengguna() {
-        $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
+    public function pengguna()
+    {
+        return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
     }
 
-    public function barang() {
-        $this->belongsTo(Barang::class, 'id_barang', 'id_barang');
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan', 'id_pelanggan');
+    }
+
+    public function detail_transaksi()
+    {
+        return $this->hasMany(DetailTransaksi::class, 'kode_transaksi', 'kode_transaksi');
     }
 }

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\DetailTransaksi;
 use App\Models\Pelanggan;
 use App\Models\Pengguna;
 use App\Models\Transaksi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
@@ -15,8 +18,21 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $data = Transaksi::all();
-        return view('transaksi.index', compact('data'));
+        $data = Transaksi::with('pengguna')->get();
+        $query = DB::table('transaksi')
+            ->join('pelanggan', 'pelanggan.id_pelanggan', '=', 'transaksi.id_pelanggan')
+            ->join('pengguna', 'pengguna.id_pengguna', '=', 'transaksi.id_pengguna')
+            ->select(
+                'transaksi.id_transaksi',
+                'transaksi.kode_transaksi',
+                'pelanggan.nama',
+                'pengguna.nama as nama_pengguna',
+                'transaksi.total',
+                'transaksi.bayar',
+                'transaksi.kembali',
+                'transaksi.created_at'
+            )->get();
+        return view('transaksi.index', compact('data', 'query'));
     }
 
     /**
@@ -48,7 +64,7 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $act = Transaksi::create([
-            'kode_transaksi' => self::kode_transaksi(),
+            'kode_transaksi' => $request->kode_transaksi,
             'id_pelanggan'   => $request->id_pelanggan,
             'id_pengguna'    => $request->id_pengguna,
             'total'          => $request->total,
@@ -57,27 +73,41 @@ class TransaksiController extends Controller
         ]);
 
         if ($act) {
-            $id_barang = $request->dt_id_barang;
+            $id_barang   = $request->dt_id_barang;
             $jumlah_beli = $request->dt_jumlah_beli;
-            $sub_total = $request->dt_sub_total;
+            $sub_total   = $request->dt_sub_total;
+
+            if (!empty($id_barang)) {
+                foreach ($id_barang as $i => $key) {
+                    $baru = new DetailTransaksi;
+
+                    $baru->kode_transaksi = $act->kode_transaksi;
+                    $baru->id_barang   = $key;
+                    $baru->jumlah_beli = $jumlah_beli[$i];
+                    $baru->sub_total   = $sub_total[$i];
+                    $baru->save();
+                }
+                return redirect('transaksi')->with('struk_url', route('/struk', ['kode_transaksi' => $act->kode_transaksi]));
+            } else {
+                return redirect('struk/' . $request->kode_transaksi);
+            }
         }
-        foreach ($id_barang as $i => $key) {
-            $baru = new Transaksi;
-            $baru->kode_transaksi = $request->kode_transaksi;
-            $baru->id_barang = $key;
-            $baru->jumlah_beli = $jumlah_beli($i);
-            $baru->sub_total = $sub_total($i);
-            $baru->save();
-        }
-        return redirect('transaksi');
+    }
+
+    public function tampilStruk($kode_transaksi)
+    {
+        $data['transaksi'] = Transaksi::with('pelanggan', 'pengguna')->where('kode_transaksi', $kode_transaksi)->first();
+        $data['detail_transaksi'] = DetailTransaksi::with('barang')->where('kode_transaksi', $kode_transaksi)->get();
+        return view('transaksi.struk', $data);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($kode_transaksi)
     {
-        //
+        $data['transaksi'] = Transaksi::with('detail_transaksi.barang')->where('kode_transaksi', $kode_transaksi)->firstOrFail();
+        return view('transaksi.show', $data);
     }
 
     /**

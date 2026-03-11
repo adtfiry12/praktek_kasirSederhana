@@ -11,13 +11,15 @@ class Barang extends Model
     protected $connection = 'mysql';
     protected $table = 'barang';
     protected $primaryKey = 'id_barang';
-    protected $fillable = ['id_kategori', 'kode_barang', 'nama_barang', 'harga', 'stok','tgl_expired'];
+    protected $fillable = ['id_kategori', 'kode_barang', 'nama_barang', 'harga', 'stok', 'tgl_expired'];
 
-    public function kategori(){
+    public function kategori()
+    {
         return $this->belongsTo(Kategori::class, 'id_kategori', 'id_kategori');
     }
 
-    public function transaksi(){
-        return $this->belongsTo(Transaksi::class, 'id_barang', 'id_barang');
+    public function detail_transaksi()
+    {
+        return $this->hasMany(DetailTransaksi::class, 'id_barang', 'id_barang');
     }
 }

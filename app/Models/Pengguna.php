@@ -12,9 +12,9 @@ class Pengguna extends Model
     protected $connection = 'mysql';
     protected $primaryKey = 'id_pengguna';
     protected $fillable = ['nama', 'no_telp', 'role', 'password'];
-    
 
-    public function Transaksi(){
-        $this->hasMany(Transaksi::class, 'id_pengguna', 'id_pengguna');
+    public function transaksi()
+    {
+        return $this->hasMany(Transaksi::class, 'id_pengguna', 'id_pengguna');
     }
 }
